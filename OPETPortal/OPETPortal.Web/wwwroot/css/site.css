@@ -1,0 +1,173 @@
+:root {
+    --bg-base:      #0a0a0a;
+    --bg-surface:   #111111;
+    --bg-elevated:  #1a1a1a;
+    --border-subtle:  rgba(255, 255, 255, 0.06);
+    --border-default: rgba(255, 255, 255, 0.10);
+    --text-pri:     #ededed;
+    --text-sec:     #888888;
+    --text-muted:   #555555;
+    --navy:         #1a2f5a;
+    --navy-light:   #2a4a8a;
+    --yellow:       #f5c400;
+    --yellow-dim:   rgba(245, 196, 0, 0.15);
+}
+
+html, body {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    background-color: var(--bg-base);
+    color: var(--text-pri);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Blazor error UI */
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(245, 196, 0, 0.10);
+    border-top: 1px solid rgba(245, 196, 0, 0.25);
+    color: #ededed;
+    padding: 12px 16px;
+    text-align: center;
+    z-index: 1000;
+    font-size: 14px;
+}
+
+/* ── Animasyonlar ── */
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes shimmer {
+    from { background-position: -200% 0; }
+    to   { background-position:  200% 0; }
+}
+
+/* Sayfa yüklenme animasyonu */
+.animate-in {
+    animation: fadeInUp 0.5s ease forwards;
+    opacity: 0;
+}
+
+.animate-fade {
+    animation: fadeIn 0.4s ease forwards;
+    opacity: 0;
+}
+
+/* Stagger delay utility */
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Scroll-triggered reveal */
+.reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+.reveal.delay-100 { transition-delay: 100ms; }
+.reveal.delay-200 { transition-delay: 200ms; }
+.reveal.delay-300 { transition-delay: 300ms; }
+
+/* Hover card lift */
+.card-hover {
+    transition: border-color 150ms ease, transform 150ms ease;
+}
+.card-hover:hover {
+    transform: translateY(-2px);
+}
+
+/* Button press feedback */
+.btn-press:active {
+    transform: scale(0.98);
+}
+
+/* Loading skeleton */
+.skeleton {
+    background: linear-gradient(90deg, #1a1a1a 25%, #222222 50%, #1a1a1a 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 6px;
+}
+
+/* ── Details/summary accordion ── */
+details > summary {
+    list-style: none;
+}
+details > summary::-webkit-details-marker {
+    display: none;
+}
+
+/* Open accordion: soru sarı */
+details[open] > summary .faq-question {
+    color: var(--yellow);
+}
+
+/* Open accordion: hafif border */
+details[open] {
+    border-color: var(--border-default) !important;
+}
+
+/* Chevron: açıkken sarı + dön */
+details[open] > summary .chevron {
+    transform: rotate(180deg);
+    color: var(--yellow);
+}
+
+.chevron {
+    transition: transform 150ms ease, color 150ms ease;
+    flex-shrink: 0;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--border-default);
+    border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.18);
+}
+
+/* ── Selection ── */
+::selection {
+    background: rgba(245, 196, 0, 0.25);
+    color: #ededed;
+}
+
+/* ── Stepper connecting line ── */
+.step-line {
+    width: 2px;
+    background: var(--border-subtle);
+    flex-grow: 1;
+    min-height: 24px;
+}
+
+/* ── Input focus — sarı glow ── */
+.input-yellow:focus {
+    outline: none;
+    border-color: rgba(245, 196, 0, 0.6);
+    box-shadow: 0 0 0 3px var(--yellow-dim);
+}

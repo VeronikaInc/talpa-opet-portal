@@ -1,0 +1,90 @@
+@page "/"
+@using Microsoft.AspNetCore.Components.Web
+@namespace OPETPortal.Web.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TALPA OPET Otobil Mobil</title>
+    <base href="~/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bg-base':     '#0a0a0a',
+                        'bg-surface':  '#111111',
+                        'bg-elevated': '#1a1a1a',
+                        'text-pri':    '#ededed',
+                        'text-sec':    '#888888',
+                        'text-muted':  '#555555',
+                        'navy':        '#1a2f5a',
+                        'navy-light':  '#2a4a8a',
+                        'yellow':      '#f5c400',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+                    },
+                    borderColor: {
+                        'subtle':  'rgba(255,255,255,0.06)',
+                        'default': 'rgba(255,255,255,0.10)',
+                    },
+                    backgroundColor: {
+                        'yellow-dim': 'rgba(245,196,0,0.15)',
+                    },
+                }
+            }
+        }
+    </script>
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="OPETPortal.Web.styles.css" rel="stylesheet" />
+    <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+</head>
+<body class="bg-bg-base text-text-pri font-sans min-h-screen antialiased">
+    <component type="typeof(App)" render-mode="ServerPrerendered" />
+
+    <div id="blazor-error-ui">
+        Bağlantı kesildi.
+        <a href="" class="font-semibold underline">Yenile</a>
+        <a class="dismiss" onclick="this.parentElement.style.display='none'">✕</a>
+    </div>
+
+    <script src="_framework/blazor.server.js"></script>
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+        }
+        function getLang() {
+            return localStorage.getItem('lang') || 'tr';
+        }
+        function setLang(lang) {
+            localStorage.setItem('lang', lang);
+        }
+
+        // Intersection Observer — scroll reveal
+        window.initReveal = function () {
+            const obs = new IntersectionObserver((entries) => {
+                entries.forEach(e => {
+                    if (e.isIntersecting) {
+                        e.target.classList.add('visible');
+                        obs.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.08 });
+            document.querySelectorAll('.reveal:not(.visible)').forEach(el => obs.observe(el));
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            window.initReveal();
+        });
+    </script>
+</body>
+</html>

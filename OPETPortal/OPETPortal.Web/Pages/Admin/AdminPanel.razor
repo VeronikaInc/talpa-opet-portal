@@ -1,0 +1,671 @@
+@page "/admin"
+@layout OPETPortal.Web.Shared.AdminLayout
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject IUyeService UyeService
+@inject ISistemAyarlariService SistemAyarlari
+@using OPETPortal.Web.Models
+
+<PageTitle>Admin Panel - TALPA OPET</PageTitle>
+
+<div class="max-w-5xl mx-auto px-5 py-8">
+
+    <!-- Tab bar -->
+    <div class="flex border-b border-subtle mb-6 gap-0.5 overflow-x-auto">
+        <button @onclick='() => _tab = "dashboard"'     class="@T("dashboard")">Dashboard</button>
+        <button @onclick='() => SwitchTab("sorgula")'   class="@T("sorgula")">Üye Sorgula</button>
+        <button @onclick='() => SwitchTab("ekle")'      class="@T("ekle")">Üye Ekle</button>
+        <button @onclick='() => SwitchTab("loglar")'    class="@T("loglar")">Sorgu Logları</button>
+        <button @onclick='() => SwitchTab("kodlar")'    class="@T("kodlar")">Kodlar</button>
+    </div>
+
+    @* ═══════════════════ DASHBOARD ═══════════════════ *@
+    @if (_tab == "dashboard")
+    {
+        @if (_stats == null)
+        {
+            <div class="text-text-sec text-sm py-10 text-center">Yükleniyor...</div>
+        }
+        else
+        {
+            <!-- Sistem Kontrol kartları -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <!-- Sistem Durumu -->
+                @{
+                    var quotaFull = _kodLimitInput > 0 && _dagitilan >= _kodLimitInput;
+                    var statusRed = !_basvuruAktif || quotaFull;
+                    var statusLabel = !_basvuruAktif ? "Başvurular Durduruldu" : (quotaFull ? "Kontenjan Dolu (Sorgu Kapalı)" : "Başvurular Aktif");
+                }
+                <div class="bg-bg-surface rounded-xl p-5 flex items-center justify-between gap-4 border-l-[3px] @(statusRed ? "border-l-red-500 border-y border-r border-subtle" : "border-l-emerald-500 border-y border-r border-subtle")"
+                     style="@(statusRed ? "background: rgba(239,68,68,0.04);" : "background: rgba(34,197,94,0.04);")">
+                    <div>
+                        <p class="text-text-muted text-xs mb-1.5">Sistem Durumu</p>
+                        <span class="inline-flex items-center gap-1.5 text-sm font-semibold @(statusRed ? "text-red-400" : "text-emerald-400")">
+                            <span class="w-2 h-2 rounded-full @(statusRed ? "bg-red-400" : "bg-emerald-400")"></span>
+                            @statusLabel
+                        </span>
+                    </div>
+                    <button @onclick="ToggleBasvuru"
+                            disabled="@_sistemLoading"
+                            class="btn-press @(_basvuruAktif ? "border-red-500/40 text-red-400 hover:bg-red-500/10" : "border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10") border rounded-lg px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-40">
+                        @(_basvuruAktif ? "Durdur" : "Başlat")
+                    </button>
+                </div>
+
+                <!-- Kod Limiti -->
+                <div class="bg-bg-surface border border-subtle rounded-xl p-5 border-l-[3px] border-l-yellow">
+                    <p class="text-text-muted text-xs mb-1.5">Kod Limiti <span class="text-text-muted/60 font-normal">(0 = limitsiz)</span></p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <input @bind="_kodLimitInput" type="number" min="0"
+                               class="input-yellow w-24 bg-bg-elevated border border-default outline-none rounded-lg px-2 py-1 text-sm text-text-pri font-mono transition-colors" />
+                        <button @onclick="SaveKodLimit"
+                                disabled="@_sistemLoading"
+                                class="btn-press bg-yellow text-[#0a0a0a] disabled:opacity-40 text-xs font-semibold px-3 py-1.5 rounded-lg hover:brightness-110 transition-all">
+                            Kaydet
+                        </button>
+                        <span class="text-text-sec text-xs">Dağıtılan: <span class="text-text-pri font-semibold">@_dagitilan</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat cards 2×2 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                <div class="bg-bg-surface border-y border-r border-subtle border-l-[3px] border-l-yellow rounded-xl p-5">
+                    <p class="text-text-muted text-xs mb-2">Toplam Üye</p>
+                    <p class="text-text-pri text-3xl font-bold">@_stats.ToplamUye.ToString("N0")</p>
+                </div>
+                <div class="bg-bg-surface border-y border-r border-subtle border-l-[3px] border-l-emerald-500 rounded-xl p-5">
+                    <p class="text-text-muted text-xs mb-2">Kod Alanlar</p>
+                    <p class="text-emerald-400 text-3xl font-bold">@_stats.KodGoruntuleyenCount.ToString("N0")</p>
+                </div>
+                <div class="bg-bg-surface border-y border-r border-subtle border-l-[3px] border-l-red-500 rounded-xl p-5">
+                    <p class="text-text-muted text-xs mb-2">Borçlu Üye</p>
+                    <p class="text-red-400 text-3xl font-bold">@_stats.BorcluCount.ToString("N0")</p>
+                </div>
+                <div class="bg-bg-surface border-y border-r border-subtle border-l-[3px] border-l-navy-light rounded-xl p-5">
+                    <p class="text-text-muted text-xs mb-2">Kalan Kodlar</p>
+                    <p class="text-blue-400 text-3xl font-bold">@_stats.AktifKodCount.ToString("N0")</p>
+                </div>
+            </div>
+
+            <!-- Son 10 sorgu -->
+            <div class="bg-bg-surface border border-subtle rounded-xl p-5">
+                <h2 class="text-text-pri font-semibold text-sm mb-4">Son Sorgular</h2>
+                @if (!_recentLogs.Any())
+                {
+                    <p class="text-text-sec text-xs text-center py-6">Henüz sorgu yok.</p>
+                }
+                else
+                {
+                    <table class="w-full text-xs">
+                        <thead>
+                            <tr class="border-b border-subtle text-text-sec">
+                                <th class="text-left py-2 px-2 font-medium">TCKN</th>
+                                <th class="text-left py-2 px-2 font-medium">Tarih</th>
+                                <th class="text-left py-2 px-2 font-medium">Sonuç</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-subtle">
+                            @foreach (var log in _recentLogs)
+                            {
+                                <tr class="hover:bg-bg-elevated/40">
+                                    <td class="py-2.5 px-2 font-mono text-text-sec">@MaskTckn(log.Tckn)</td>
+                                    <td class="py-2.5 px-2 text-text-sec">@log.SorguTarihi.ToString("dd.MM.yy HH:mm")</td>
+                                    <td class="py-2.5 px-2">@SonucBadge(log.Sonuc)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        }
+    }
+
+    @* ═══════════════════ ÜYE SORGULA ═══════════════════ *@
+    @if (_tab == "sorgula")
+    {
+        <div class="bg-bg-surface border border-subtle rounded-xl p-5 mb-4">
+
+            <!-- Arama modu seçici -->
+            <div class="flex gap-2 mb-5">
+                <button @onclick='() => _searchMode = "tckn"'
+                        class="@ModeBtn("tckn") px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
+                    TCKN ile Ara
+                </button>
+                <button @onclick='() => _searchMode = "kod"'
+                        class="@ModeBtn("kod") px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
+                    Kod ile Ara
+                </button>
+            </div>
+
+            <div class="flex gap-2">
+                <input @bind="_searchQuery" @onkeydown="OnSorgulaKey"
+                       type="text"
+                       placeholder="@(_searchMode == "tckn" ? "11 haneli TCKN" : "OPET kodu (ör: TLP123456)")"
+                       class="input-yellow flex-1 bg-bg-elevated border border-default outline-none rounded-lg px-3 py-2 text-xs text-text-pri placeholder:text-text-muted font-mono transition-colors" />
+                <button @onclick="DoSearch"
+                        class="btn-press bg-yellow text-[#0a0a0a] hover:brightness-110 font-semibold px-4 py-2 rounded-lg text-xs transition-all">
+                    Ara
+                </button>
+            </div>
+        </div>
+
+        @if (_searchResult != null)
+        {
+            <div class="bg-bg-surface border border-subtle rounded-xl p-5">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <p class="text-text-muted text-xs mb-0.5">TCKN</p>
+                        <p class="text-text-pri font-mono text-sm font-semibold">@_searchResult.Tckn</p>
+                    </div>
+                    <div>
+                        <p class="text-text-muted text-xs mb-0.5">OPET Kodu</p>
+                        <p class="text-yellow font-mono text-sm font-semibold">@_searchResult.OpetKodu</p>
+                    </div>
+                    <div>
+                        <p class="text-text-muted text-xs mb-0.5">Kayıt Tarihi</p>
+                        <p class="text-text-pri text-xs">@_searchResult.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                    </div>
+                    <div>
+                        <p class="text-text-muted text-xs mb-0.5">Kod Görüntülendi</p>
+                        @if (_searchResult.KodGoruntulendi)
+                        {
+                            <span class="text-xs bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                                ✓ @_searchResult.GoruntulmeTarihi?.ToString("dd.MM.yyyy HH:mm")
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-xs text-text-sec">Henüz görüntülenmedi</span>
+                        }
+                    </div>
+                    <div>
+                        <p class="text-text-muted text-xs mb-1">Borçlu</p>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox"
+                                   checked="@_searchResult.Borclu"
+                                   @onchange="e => ToggleBorclu(_searchResult, (bool)e.Value!)"
+                                   class="w-4 h-4 rounded cursor-pointer" style="accent-color: #f5c400" />
+                            <span class="text-xs @(_searchResult.Borclu ? "text-yellow" : "text-text-sec")">
+                                @(_searchResult.Borclu ? "Borçlu" : "Borçsuz")
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (_searchDone)
+        {
+            <div class="rounded-xl px-4 py-3 text-xs text-red-400" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.20);">
+                Kayıt bulunamadı.
+            </div>
+        }
+    }
+
+    @* ═══════════════════ ÜYE EKLE ═══════════════════ *@
+    @if (_tab == "ekle")
+    {
+        <div class="bg-bg-surface border border-subtle rounded-xl p-6 max-w-md">
+            <h2 class="font-semibold text-text-pri mb-5">Manuel Üye Ekle</h2>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs text-text-sec uppercase tracking-wide font-semibold mb-1.5">TCKN</label>
+                    <input @bind="_newTckn" type="text" maxlength="11" inputmode="numeric"
+                           placeholder="11 haneli TC kimlik no"
+                           class="input-yellow w-full bg-bg-elevated border border-default outline-none rounded-lg px-3 py-2.5 text-sm text-text-pri font-mono placeholder:text-text-muted placeholder:font-sans transition-colors" />
+                </div>
+                <div>
+                    <label class="block text-xs text-text-sec uppercase tracking-wide font-semibold mb-1.5">OPET Kodu</label>
+                    <input @bind="_newKod" type="text"
+                           placeholder="ör: TLP123456"
+                           class="input-yellow w-full bg-bg-elevated border border-default outline-none rounded-lg px-3 py-2.5 text-sm text-text-pri font-mono placeholder:text-text-muted placeholder:font-sans transition-colors" />
+                </div>
+                <div class="flex items-center gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" @bind="_newBorclu"
+                               class="w-4 h-4 rounded cursor-pointer" style="accent-color: #f5c400" />
+                        <span class="text-xs text-text-sec">Borçlu</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" @bind="_newTestKaydi"
+                               class="w-4 h-4 rounded cursor-pointer" style="accent-color: #6b7280" />
+                        <span class="text-xs text-text-sec">Test kaydı</span>
+                    </label>
+                </div>
+
+                @if (_ekleError != null)
+                {
+                    <p class="text-red-400 text-xs">@_ekleError</p>
+                }
+
+                <button @onclick="DoEkle"
+                        disabled="@_ekleLoading"
+                        class="btn-press w-full bg-yellow text-[#0a0a0a] disabled:opacity-40 hover:brightness-110 font-semibold py-2.5 rounded-lg text-sm transition-all">
+                    @(_ekleLoading ? "Kaydediliyor..." : "Kaydet")
+                </button>
+
+                @if (_ekleSuccess)
+                {
+                    <div class="rounded-lg px-4 py-3 text-xs text-emerald-400" style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.20);">
+                        ✓ Üye başarıyla eklendi.
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    @* ═══════════════════ KODLAR ═══════════════════ *@
+    @if (_tab == "kodlar")
+    {
+        <!-- Filtreler -->
+        <div class="bg-bg-surface border border-subtle rounded-xl p-4 mb-4">
+            <div class="flex flex-wrap gap-3 items-end">
+                <div>
+                    <label class="block text-xs text-text-sec mb-1">Ara</label>
+                    <input @bind="_kodSearch" type="text" placeholder="OPET kodu veya TCKN..."
+                           class="input-yellow bg-bg-elevated border border-default outline-none rounded-lg px-3 py-1.5 text-xs text-text-pri w-48 font-mono transition-colors" />
+                </div>
+                <div>
+                    <label class="block text-xs text-text-sec mb-1">Durum</label>
+                    <select @bind="_kodDurumFilter"
+                            class="bg-bg-elevated border border-default outline-none rounded-lg px-2 py-1.5 text-xs text-text-pri">
+                        <option value="">Tümü</option>
+                        <option value="kullanildi">Kullanıldı</option>
+                        <option value="bekliyor">Bekliyor</option>
+                    </select>
+                </div>
+                <button @onclick="LoadKodlar"
+                        class="btn-press bg-yellow text-[#0a0a0a] hover:brightness-110 text-xs font-semibold px-4 py-2 rounded-lg transition-all self-end">
+                    Filtrele
+                </button>
+                <button @onclick="ResetKodFilters"
+                        class="btn-press border border-default hover:border-subtle text-text-sec text-xs px-3 py-2 rounded-lg transition-colors self-end">
+                    Temizle
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-bg-surface border border-subtle rounded-xl overflow-hidden">
+            @if (_kodlarLoading)
+            {
+                <p class="text-text-sec text-xs text-center py-10">Yükleniyor...</p>
+            }
+            else if (!_kodlar.Any())
+            {
+                <p class="text-text-sec text-xs text-center py-10">Kayıt bulunamadı.</p>
+            }
+            else
+            {
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr class="border-b border-subtle text-text-sec">
+                            <th class="text-left py-3 px-4 font-medium">OPET Kodu</th>
+                            <th class="text-left py-3 px-4 font-medium">TCKN</th>
+                            <th class="text-left py-3 px-4 font-medium">Durum</th>
+                            <th class="text-left py-3 px-4 font-medium hidden md:table-cell">Görüntüleme Tarihi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-subtle">
+                        @foreach (var k in _kodlar)
+                        {
+                            <tr class="hover:bg-bg-elevated/40 transition-colors">
+                                <td class="py-2.5 px-4 font-mono text-yellow font-semibold">@k.OpetKodu</td>
+                                <td class="py-2.5 px-4 font-mono text-text-sec">@MaskTckn(k.Tckn)</td>
+                                <td class="py-2.5 px-4">
+                                    @if (k.KodGoruntulendi)
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 text-emerald-400 text-xs">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Kullanıldı
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 text-xs" style="color: #555555;">
+                                            <span class="w-1.5 h-1.5 rounded-full" style="background: #444444;"></span>Bekliyor
+                                        </span>
+                                    }
+                                </td>
+                                <td class="py-2.5 px-4 hidden md:table-cell" style="color: #555555;">
+                                    @(k.GoruntulmeTarihi.HasValue ? k.GoruntulmeTarihi.Value.ToString("dd.MM.yy HH:mm") : "—")
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="flex items-center justify-between px-4 py-3 border-t border-subtle">
+                    <span class="text-xs text-text-sec">Sayfa @(_kodPage + 1) / @_kodPageCount</span>
+                    <div class="flex gap-2">
+                        <button @onclick="KodPrevPage" disabled="@(_kodPage == 0)"
+                                class="btn-press border border-default text-text-sec text-xs px-3 py-1.5 rounded-lg disabled:opacity-30 hover:border-subtle transition-colors">
+                            ← Önceki
+                        </button>
+                        <button @onclick="KodNextPage" disabled="@(_kodPage >= _kodPageCount - 1)"
+                                class="btn-press border border-default text-text-sec text-xs px-3 py-1.5 rounded-lg disabled:opacity-30 hover:border-subtle transition-colors">
+                            Sonraki →
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @* ═══════════════════ SORGU LOGLARI ═══════════════════ *@
+    @if (_tab == "loglar")
+    {
+        <!-- Filtreler -->
+        <div class="bg-bg-surface border border-subtle rounded-xl p-4 mb-4">
+            <div class="flex flex-wrap gap-3 items-end">
+                <div>
+                    <label class="block text-xs text-text-sec mb-1">TCKN</label>
+                    <input @bind="_logTcknFilter" type="text" maxlength="11" placeholder="Filtrele..."
+                           class="input-yellow bg-bg-elevated border border-default outline-none rounded-lg px-3 py-1.5 text-xs text-text-pri w-36 font-mono transition-colors" />
+                </div>
+                <div>
+                    <label class="block text-xs text-text-sec mb-1">Sonuç</label>
+                    <select @bind="_logSonucFilter"
+                            class="bg-bg-elevated border border-default outline-none rounded-lg px-2 py-1.5 text-xs text-text-pri">
+                        <option value="">Tümü</option>
+                        <option value="basarili">Başarılı</option>
+                        <option value="borclu">Borçlu</option>
+                        <option value="bulunamadi">Bulunamadı</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-text-sec mb-1">Başlangıç</label>
+                    <input @bind="_logBaslangic" type="date"
+                           class="bg-bg-elevated border border-default outline-none rounded-lg px-2 py-1.5 text-xs text-text-pri" />
+                </div>
+                <div>
+                    <label class="block text-xs text-text-sec mb-1">Bitiş</label>
+                    <input @bind="_logBitis" type="date"
+                           class="bg-bg-elevated border border-default outline-none rounded-lg px-2 py-1.5 text-xs text-text-pri" />
+                </div>
+                <button @onclick="LoadLogs"
+                        class="btn-press bg-yellow text-[#0a0a0a] hover:brightness-110 text-xs font-semibold px-4 py-2 rounded-lg transition-all self-end">
+                    Filtrele
+                </button>
+                <button @onclick="ResetLogFilters"
+                        class="btn-press border border-default hover:border-subtle text-text-sec text-xs px-3 py-2 rounded-lg transition-colors self-end">
+                    Temizle
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-bg-surface border border-subtle rounded-xl overflow-hidden">
+            @if (_logsLoading)
+            {
+                <p class="text-text-sec text-xs text-center py-10">Yükleniyor...</p>
+            }
+            else if (!_logs.Any())
+            {
+                <p class="text-text-sec text-xs text-center py-10">Kayıt bulunamadı.</p>
+            }
+            else
+            {
+                <table class="w-full text-xs">
+                    <thead>
+                        <tr class="border-b border-subtle text-text-sec">
+                            <th class="text-left py-3 px-4 font-medium">#</th>
+                            <th class="text-left py-3 px-4 font-medium">TCKN</th>
+                            <th class="text-left py-3 px-4 font-medium">Tarih</th>
+                            <th class="text-left py-3 px-4 font-medium">Sonuç</th>
+                            <th class="text-left py-3 px-4 font-medium hidden md:table-cell">IP</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-subtle">
+                        @foreach (var log in _logs)
+                        {
+                            <tr class="hover:bg-bg-elevated/40 transition-colors">
+                                <td class="py-2.5 px-4" style="color: #444444;">@log.Id</td>
+                                <td class="py-2.5 px-4 font-mono text-text-sec">@MaskTckn(log.Tckn)</td>
+                                <td class="py-2.5 px-4 text-text-sec">@log.SorguTarihi.ToString("dd.MM.yy HH:mm")</td>
+                                <td class="py-2.5 px-4">@SonucBadge(log.Sonuc)</td>
+                                <td class="py-2.5 px-4 hidden md:table-cell" style="color: #555555;">@(log.IpAdresi ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div class="flex items-center justify-between px-4 py-3 border-t border-subtle">
+                    <span class="text-xs text-text-sec">@_logTotal kayıt · Sayfa @(_logPage + 1) / @_logPageCount</span>
+                    <div class="flex gap-2">
+                        <button @onclick="PrevPage" disabled="@(_logPage == 0)"
+                                class="btn-press border border-default text-text-sec text-xs px-3 py-1.5 rounded-lg disabled:opacity-30 hover:border-subtle transition-colors">
+                            ← Önceki
+                        </button>
+                        <button @onclick="NextPage" disabled="@(_logPage >= _logPageCount - 1)"
+                                class="btn-press border border-default text-text-sec text-xs px-3 py-1.5 rounded-lg disabled:opacity-30 hover:border-subtle transition-colors">
+                            Sonraki →
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</div>
+
+@code {
+    private string _tab = "dashboard";
+
+    // Dashboard
+    private DashboardStats? _stats;
+    private List<SorguLog> _recentLogs = new();
+    private bool _basvuruAktif = true;
+    private int _kodLimitInput;
+    private int _dagitilan;
+    private bool _sistemLoading;
+
+    // Sorgula tab
+    private string _searchMode = "tckn";
+    private string _searchQuery = string.Empty;
+    private UyeKod? _searchResult;
+    private bool _searchDone;
+
+    // Ekle tab
+    private string _newTckn = string.Empty;
+    private string _newKod  = string.Empty;
+    private bool   _newBorclu;
+    private bool   _newTestKaydi;
+    private bool   _ekleLoading;
+    private bool   _ekleSuccess;
+    private string? _ekleError;
+
+    // Kodlar tab
+    private List<UyeKod> _kodlar = new();
+    private bool _kodlarLoading;
+    private string _kodSearch = string.Empty;
+    private string _kodDurumFilter = string.Empty;
+    private int _kodPage;
+    private int _kodTotal;
+    private const int KodPageSize = 50;
+    private int _kodPageCount => (int)Math.Ceiling(_kodTotal / (double)KodPageSize);
+
+    // Loglar tab
+    private List<SorguLog> _logs = new();
+    private bool   _logsLoading;
+    private string _logTcknFilter   = string.Empty;
+    private string _logSonucFilter  = string.Empty;
+    private DateTime? _logBaslangic;
+    private DateTime? _logBitis;
+    private int _logPage;
+    private int _logTotal;
+    private const int LogPageSize = 20;
+    private int _logPageCount => (int)Math.Ceiling(_logTotal / (double)LogPageSize);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _stats = await UyeService.GetDashboardStatsAsync();
+        _recentLogs = await UyeService.GetSorguLoglarAsync(take: 10);
+        _basvuruAktif = await SistemAyarlari.BasvuruAktifMiAsync();
+        _kodLimitInput = await SistemAyarlari.GetMaxKodLimitiAsync();
+        _dagitilan = await SistemAyarlari.GetDagitimSayisiAsync();
+    }
+
+    private async Task SwitchTab(string tab)
+    {
+        _tab = tab;
+        if (tab == "loglar" && !_logs.Any())
+            await LoadLogs();
+        if (tab == "kodlar" && !_kodlar.Any())
+            await LoadKodlar();
+    }
+
+    private async Task ToggleBasvuru()
+    {
+        _sistemLoading = true;
+        try
+        {
+            _basvuruAktif = !_basvuruAktif;
+            await SistemAyarlari.SetAyarAsync("basvuru_aktif", _basvuruAktif ? "true" : "false");
+        }
+        finally { _sistemLoading = false; }
+    }
+
+    private async Task SaveKodLimit()
+    {
+        _sistemLoading = true;
+        try
+        {
+            await SistemAyarlari.SetAyarAsync("max_kod_limiti", _kodLimitInput.ToString());
+            _dagitilan = await SistemAyarlari.GetDagitimSayisiAsync();
+        }
+        finally { _sistemLoading = false; }
+    }
+
+    private string T(string key) =>
+        _tab == key
+            ? "border-b-2 border-yellow text-text-pri bg-bg-surface whitespace-nowrap px-4 py-2.5 text-sm font-medium rounded-t-lg"
+            : "text-text-sec hover:text-text-pri hover:bg-bg-elevated whitespace-nowrap px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors duration-150";
+
+    private string ModeBtn(string mode) =>
+        _searchMode == mode
+            ? "bg-yellow/10 border border-yellow/30 text-yellow"
+            : "bg-bg-elevated border border-subtle text-text-sec hover:text-text-pri";
+
+    private static string MaskTckn(string tckn)
+    {
+        if (tckn.Length != 11) return tckn;
+        return tckn[..3] + "****" + tckn[^3..];
+    }
+
+    private static RenderFragment SonucBadge(string sonuc) => builder =>
+    {
+        var (cls, label) = sonuc switch
+        {
+            "basarili"   => ("bg-emerald-500/15 text-emerald-400 border border-emerald-500/20", "Başarılı"),
+            "borclu"     => ("bg-yellow-500/15  text-yellow-400  border border-yellow-500/20",  "Borçlu"),
+            "bulunamadi" => ("bg-red-500/15     text-red-400     border border-red-500/20",     "Bulunamadı"),
+            _            => ("bg-bg-elevated text-text-sec border border-subtle", sonuc),
+        };
+        builder.OpenElement(0, "span");
+        builder.AddAttribute(1, "class", $"text-xs px-2 py-0.5 rounded-full font-medium {cls}");
+        builder.AddContent(2, label);
+        builder.CloseElement();
+    };
+
+    // ── Sorgula ──────────────────────────────────────────────────────────────
+    private async Task DoSearch()
+    {
+        _searchResult = null;
+        _searchDone = false;
+        var q = _searchQuery.Trim();
+        if (string.IsNullOrEmpty(q)) return;
+        _searchResult = _searchMode == "tckn"
+            ? await UyeService.GetByTcknAsync(q)
+            : await UyeService.GetByKodAsync(q);
+        _searchDone = true;
+    }
+
+    private async Task OnSorgulaKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await DoSearch();
+    }
+
+    private async Task ToggleBorclu(UyeKod uye, bool value)
+    {
+        uye.Borclu = value;
+        await UyeService.UpdateBorcluAsync(uye.Tckn, value);
+    }
+
+    // ── Ekle ─────────────────────────────────────────────────────────────────
+    private async Task DoEkle()
+    {
+        _ekleError = null;
+        _ekleSuccess = false;
+        var tckn = _newTckn.Trim();
+        var kod  = _newKod.Trim();
+
+        if (tckn.Length != 11 || !tckn.All(char.IsDigit))
+        { _ekleError = "TCKN 11 haneli ve yalnızca rakam olmalıdır."; return; }
+        if (string.IsNullOrEmpty(kod))
+        { _ekleError = "OPET kodu boş bırakılamaz."; return; }
+
+        _ekleLoading = true;
+        try
+        {
+            var uye = new UyeKod { Tckn = tckn, OpetKodu = kod, Borclu = _newBorclu, TestKaydi = _newTestKaydi };
+            var ok = await UyeService.UyeEkleAsync(uye);
+            if (ok) { _ekleSuccess = true; _newTckn = _newKod = string.Empty; _newBorclu = _newTestKaydi = false; }
+            else _ekleError = "Bu TCKN zaten kayıtlı.";
+        }
+        finally { _ekleLoading = false; }
+    }
+
+    // ── Kodlar ───────────────────────────────────────────────────────────────
+    private async Task LoadKodlar()
+    {
+        _kodlarLoading = true;
+        try
+        {
+            var search = string.IsNullOrWhiteSpace(_kodSearch) ? null : _kodSearch.Trim();
+            var all = (await UyeService.GetAllAsync(search)).ToList();
+            if (_kodDurumFilter == "kullanildi")
+                all = all.Where(k => k.KodGoruntulendi).ToList();
+            else if (_kodDurumFilter == "bekliyor")
+                all = all.Where(k => !k.KodGoruntulendi).ToList();
+            _kodTotal = all.Count;
+            _kodlar = all.Skip(_kodPage * KodPageSize).Take(KodPageSize).ToList();
+        }
+        finally { _kodlarLoading = false; }
+    }
+
+    private async Task KodPrevPage() { if (_kodPage > 0) { _kodPage--; await LoadKodlar(); } }
+    private async Task KodNextPage() { if (_kodPage < _kodPageCount - 1) { _kodPage++; await LoadKodlar(); } }
+
+    private async Task ResetKodFilters()
+    {
+        _kodSearch = _kodDurumFilter = string.Empty;
+        _kodPage = 0;
+        await LoadKodlar();
+    }
+
+    // ── Loglar ───────────────────────────────────────────────────────────────
+    private async Task LoadLogs()
+    {
+        _logsLoading = true;
+        try
+        {
+            var tckn = string.IsNullOrWhiteSpace(_logTcknFilter) ? null : _logTcknFilter.Trim();
+            var sonuc = string.IsNullOrWhiteSpace(_logSonucFilter) ? null : _logSonucFilter;
+            _logTotal = await UyeService.GetSorguLogCountAsync(tckn, sonuc, _logBaslangic, _logBitis?.AddDays(1));
+            _logs = await UyeService.GetSorguLoglarAsync(tckn, sonuc, _logBaslangic, _logBitis?.AddDays(1),
+                                                          _logPage * LogPageSize, LogPageSize);
+        }
+        finally { _logsLoading = false; }
+    }
+
+    private async Task PrevPage() { if (_logPage > 0) { _logPage--; await LoadLogs(); } }
+    private async Task NextPage() { if (_logPage < _logPageCount - 1) { _logPage++; await LoadLogs(); } }
+
+    private async Task ResetLogFilters()
+    {
+        _logTcknFilter = _logSonucFilter = string.Empty;
+        _logBaslangic = _logBitis = null;
+        _logPage = 0;
+        await LoadLogs();
+    }
+}

@@ -1,0 +1,122 @@
+@page "/"
+@layout MainLayout
+@inject LocalizationService L
+@inject IJSRuntime JS
+
+<PageTitle>TALPA OPET Otobil Mobil</PageTitle>
+
+<!-- Hero -->
+<section class="bg-bg-base">
+    <div class="max-w-5xl mx-auto px-5 pt-20 pb-24 md:pt-28 md:pb-32 flex flex-col items-center text-center">
+
+        <!-- Logo pair -->
+        <div class="animate-in flex items-center gap-4 mb-10">
+            <div class="bg-white rounded-xl px-3 py-2 flex items-center justify-center shadow-sm">
+                <img src="images/talpa-logo.png" alt="TALPA" class="h-10 md:h-12 w-auto object-contain" />
+            </div>
+            <span class="text-text-muted text-lg font-light">×</span>
+            <div class="bg-white rounded-xl px-4 py-2 flex items-center justify-center shadow-sm" style="height:56px;">
+                <img src="images/opet-logo.png" alt="OPET" class="h-7 w-auto object-contain" />
+            </div>
+        </div>
+
+        <!-- Badge -->
+        <div class="animate-in delay-100 inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-8 text-xs font-medium text-yellow border border-yellow/20"
+             style="background: rgba(245,196,0,0.10);">
+            <span class="w-1.5 h-1.5 rounded-full bg-yellow"></span>
+            TALPA × OPET İş Birliği
+        </div>
+
+        <!-- Heading -->
+        <h1 class="animate-in delay-200 text-[2.5rem] sm:text-5xl md:text-6xl font-bold text-text-pri leading-[1.08] tracking-[-0.02em] mb-5 max-w-2xl">
+            TALPA Üyelerine Özel<br>
+            <span class="text-yellow">Akaryakıt İndirimi</span>
+        </h1>
+
+        <p class="animate-in delay-300 text-text-sec text-base md:text-lg max-w-[480px] leading-relaxed mb-10">
+            @L["home_hero_desc"]
+        </p>
+
+        <!-- CTAs -->
+        <div class="animate-in delay-400 flex flex-col sm:flex-row gap-3 items-center">
+            <a href="/sorgula"
+               class="btn-press inline-flex items-center gap-2 bg-yellow text-[#0a0a0a] font-semibold px-6 py-2.5 rounded-md text-sm transition-all duration-150 hover:brightness-110">
+                @L["home_cta"]
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+            <a href="/rehber"
+               class="btn-press inline-flex items-center gap-2 border border-default hover:bg-bg-elevated text-text-sec hover:text-text-pri px-6 py-2.5 rounded-md text-sm transition-all duration-150">
+                @L["home_guide_link"]
+            </a>
+        </div>
+
+        <!-- Discount badge -->
+        <div class="animate-in delay-500 mt-16 inline-flex items-center gap-5 bg-bg-surface border border-subtle rounded-xl px-8 py-5">
+            <div class="text-center">
+                <div class="text-5xl font-black text-yellow leading-none">%3</div>
+                <div class="text-[11px] text-text-muted mt-1.5 font-medium uppercase tracking-widest">İndirim</div>
+            </div>
+            <div class="w-px h-12" style="background: rgba(255,255,255,0.06);"></div>
+            <div class="text-left">
+                <div class="text-text-pri text-sm font-semibold">OPET &amp; Sunpet</div>
+                <div class="text-text-sec text-xs mt-1">Tüm istasyonlarda geçerli</div>
+                <div class="text-text-muted text-xs mt-0.5">2.000+ istasyon, Türkiye geneli</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Divider -->
+<div class="border-t border-subtle"></div>
+
+<!-- Feature Cards -->
+<section class="max-w-5xl mx-auto px-5 py-20">
+    <div class="grid md:grid-cols-3 gap-3">
+
+        <!-- Card 1 -->
+        <div class="reveal delay-100 card-hover bg-bg-surface border border-subtle hover:border-default rounded-xl p-6">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background: rgba(245,196,0,0.12);">
+                <svg class="w-5 h-5 text-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <h3 class="font-semibold text-text-pri text-sm mb-2">@L["home_feature1_title"]</h3>
+            <p class="text-text-sec text-sm leading-relaxed">@L["home_feature1_desc"]</p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="reveal delay-200 card-hover bg-bg-surface border border-subtle hover:border-default rounded-xl p-6">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background: rgba(34,197,94,0.10);">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                </svg>
+            </div>
+            <h3 class="font-semibold text-text-pri text-sm mb-2">@L["home_feature2_title"]</h3>
+            <p class="text-text-sec text-sm leading-relaxed">@L["home_feature2_desc"]</p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="reveal delay-300 card-hover bg-bg-surface border border-subtle hover:border-default rounded-xl p-6">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background: rgba(26,47,90,0.35);">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+            <h3 class="font-semibold text-text-pri text-sm mb-2">@L["home_feature3_title"]</h3>
+            <p class="text-text-sec text-sm leading-relaxed">@L["home_feature3_desc"]</p>
+        </div>
+
+    </div>
+</section>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await JS.InvokeVoidAsync("initReveal");
+    }
+}
