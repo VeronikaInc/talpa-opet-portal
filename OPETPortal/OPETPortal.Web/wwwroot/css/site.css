@@ -1,16 +1,41 @@
 :root {
-    --bg-base:      #0a0a0a;
-    --bg-surface:   #111111;
-    --bg-elevated:  #1a1a1a;
-    --border-subtle:  rgba(255, 255, 255, 0.06);
-    --border-default: rgba(255, 255, 255, 0.10);
-    --text-pri:     #ededed;
-    --text-sec:     #888888;
-    --text-muted:   #555555;
-    --navy:         #1a2f5a;
-    --navy-light:   #2a4a8a;
-    --yellow:       #f5c400;
-    --yellow-dim:   rgba(245, 196, 0, 0.15);
+    /* ── Ana renkler ── */
+    --navy:          #1B2F5E;
+    --navy-dark:     #111E3F;
+    --navy-light:    #2A4A8A;
+    --yellow:        #F5C400;
+    --yellow-dark:   #D4A800;
+    --red:           #C8102E;
+    --white:         #FFFFFF;
+    --white-80:      rgba(255,255,255,0.80);
+    --white-40:      rgba(255,255,255,0.40);
+    --white-10:      rgba(255,255,255,0.10);
+    --white-06:      rgba(255,255,255,0.06);
+
+    /* ── Zemin sistemi ── */
+    --bg-base:       #1B2F5E;
+    --bg-surface:    #243770;
+    --bg-elevated:   #2E4485;
+
+    /* ── Kenarlık ── */
+    --border:         rgba(255,255,255,0.12);
+    --border-hover:   rgba(245,196,0,0.30);
+    --border-subtle:  rgba(255,255,255,0.12);
+    --border-default: rgba(255,255,255,0.18);
+
+    /* ── Metin ── */
+    --text-pri:       #FFFFFF;
+    --text-sec:       rgba(255,255,255,0.70);
+    --text-muted:     rgba(255,255,255,0.40);
+    --text-primary:   #FFFFFF;
+    --text-secondary: rgba(255,255,255,0.70);
+
+    /* ── Yardımcı ── */
+    --yellow-dim:    rgba(245,196,0,0.15);
+    --yellow-muted:  rgba(245,196,0,0.15);
+    --success:       #22c55e;
+    --warning:       #F5C400;
+    --error:         #C8102E;
 }
 
 html, body {
@@ -21,6 +46,11 @@ html, body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* Anchor hedefleri için sticky navbar offset */
+section[id] {
+    scroll-margin-top: 80px;
+}
+
 /* Blazor error UI */
 #blazor-error-ui {
     display: none;
@@ -28,16 +58,18 @@ html, body {
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(245, 196, 0, 0.10);
-    border-top: 1px solid rgba(245, 196, 0, 0.25);
-    color: #ededed;
+    background: rgba(245,196,0,0.10);
+    border-top: 1px solid rgba(245,196,0,0.25);
+    color: #ffffff;
     padding: 12px 16px;
     text-align: center;
     z-index: 1000;
     font-size: 14px;
 }
 
-/* ── Animasyonlar ── */
+/* ══════════════════════════════════════
+   Animasyonlar
+══════════════════════════════════════ */
 
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(16px); }
@@ -54,7 +86,7 @@ html, body {
     to   { background-position:  200% 0; }
 }
 
-/* Sayfa yüklenme animasyonu */
+/* Sayfa yüklenme animasyonu (hero) */
 .animate-in {
     animation: fadeInUp 0.5s ease forwards;
     opacity: 0;
@@ -65,14 +97,14 @@ html, body {
     opacity: 0;
 }
 
-/* Stagger delay utility */
+/* Stagger delay yardımcıları */
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }
 .delay-400 { animation-delay: 400ms; }
 .delay-500 { animation-delay: 500ms; }
 
-/* Scroll-triggered reveal */
+/* ── Scroll-triggered .reveal sistemi (mevcut) ── */
 .reveal {
     opacity: 0;
     transform: translateY(20px);
@@ -86,7 +118,25 @@ html, body {
 .reveal.delay-200 { transition-delay: 200ms; }
 .reveal.delay-300 { transition-delay: 300ms; }
 
-/* Hover card lift */
+/* ── Scroll-triggered .anim sistemi (yeni) ── */
+.anim {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 500ms ease, transform 500ms ease;
+}
+.anim.animate-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+.anim-delay-1 { transition-delay: 100ms; }
+.anim-delay-2 { transition-delay: 200ms; }
+.anim-delay-3 { transition-delay: 300ms; }
+.anim-delay-4 { transition-delay: 400ms; }
+
+/* ══════════════════════════════════════
+   Etkileşim
+══════════════════════════════════════ */
+
 .card-hover {
     transition: border-color 150ms ease, transform 150ms ease;
 }
@@ -94,20 +144,48 @@ html, body {
     transform: translateY(-2px);
 }
 
-/* Button press feedback */
 .btn-press:active {
     transform: scale(0.98);
 }
 
-/* Loading skeleton */
+/* ══════════════════════════════════════
+   Nav linkleri (anchor tabanlı)
+══════════════════════════════════════ */
+
+.nav-link {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: var(--text-sec);
+    text-decoration: none;
+    transition: color 150ms ease, background 150ms ease;
+    border-bottom: 2px solid transparent;
+    line-height: 1.5;
+}
+.nav-link:hover {
+    color: var(--text-pri);
+    background: rgba(255,255,255,0.06);
+}
+.nav-link.nav-active {
+    color: var(--yellow);
+    border-bottom-color: var(--yellow);
+}
+
+/* ══════════════════════════════════════
+   Loading skeleton
+══════════════════════════════════════ */
+
 .skeleton {
-    background: linear-gradient(90deg, #1a1a1a 25%, #222222 50%, #1a1a1a 75%);
+    background: linear-gradient(90deg, #243770 25%, #2E4485 50%, #243770 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
     border-radius: 6px;
 }
 
-/* ── Details/summary accordion ── */
+/* ══════════════════════════════════════
+   Details / Accordion
+══════════════════════════════════════ */
+
 details > summary {
     list-style: none;
 }
@@ -115,17 +193,14 @@ details > summary::-webkit-details-marker {
     display: none;
 }
 
-/* Open accordion: soru sarı */
 details[open] > summary .faq-question {
     color: var(--yellow);
 }
 
-/* Open accordion: hafif border */
 details[open] {
-    border-color: var(--border-default) !important;
+    border-left: 3px solid var(--yellow) !important;
 }
 
-/* Chevron: açıkken sarı + dön */
 details[open] > summary .chevron {
     transform: rotate(180deg);
     color: var(--yellow);
@@ -136,28 +211,28 @@ details[open] > summary .chevron {
     flex-shrink: 0;
 }
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar {
-    width: 6px;
-}
-::-webkit-scrollbar-track {
-    background: var(--bg-base);
-}
-::-webkit-scrollbar-thumb {
-    background: var(--border-default);
-    border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.18);
-}
+/* ══════════════════════════════════════
+   Scrollbar
+══════════════════════════════════════ */
 
-/* ── Selection ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--navy-dark); }
+::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+/* ══════════════════════════════════════
+   Selection
+══════════════════════════════════════ */
+
 ::selection {
-    background: rgba(245, 196, 0, 0.25);
-    color: #ededed;
+    background: rgba(245,196,0,0.25);
+    color: #ffffff;
 }
 
-/* ── Stepper connecting line ── */
+/* ══════════════════════════════════════
+   Guide section — dikey çizgi
+══════════════════════════════════════ */
+
 .step-line {
     width: 2px;
     background: var(--border-subtle);
@@ -165,9 +240,133 @@ details[open] > summary .chevron {
     min-height: 24px;
 }
 
-/* ── Input focus — sarı glow ── */
+/* ══════════════════════════════════════
+   Input — sarı focus glow
+══════════════════════════════════════ */
+
 .input-yellow:focus {
     outline: none;
-    border-color: rgba(245, 196, 0, 0.6);
+    border-color: rgba(245,196,0,0.6);
     box-shadow: 0 0 0 3px var(--yellow-dim);
+}
+
+/* ══════════════════════════════════════
+   Mini Animated Stepper (hero)
+══════════════════════════════════════ */
+
+.stepper-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    padding: 28px 24px;
+    width: 300px;
+}
+@media (max-width: 767px) {
+    .stepper-card { width: 100%; }
+}
+
+.stepper-header {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+}
+
+.stepper-row {
+    display: flex;
+    gap: 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: background 300ms ease, border-color 300ms ease;
+}
+.stepper-row--active {
+    background: var(--bg-elevated);
+    border-color: var(--border-subtle);
+}
+
+.stepper-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.stepper-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    transition: background 300ms ease, border-color 300ms ease, color 300ms ease;
+}
+.stepper-num--active {
+    background: var(--yellow-dim);
+    border-color: rgba(245,196,0,0.4);
+    color: var(--yellow);
+}
+
+.stepper-vline {
+    width: 1px;
+    flex-grow: 1;
+    min-height: 12px;
+    margin: 4px 0;
+    background: var(--border-subtle);
+}
+
+.stepper-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.stepper-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: color 300ms ease;
+}
+.stepper-title--active {
+    color: var(--text-pri);
+}
+
+.stepper-desc {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: transparent;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 300ms ease, opacity 300ms ease, color 300ms ease;
+}
+.stepper-desc--active {
+    color: var(--text-sec);
+    max-height: 48px;
+    opacity: 1;
+}
+
+.stepper-dots {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    margin-top: 20px;
+    padding-left: 12px;
+}
+.stepper-dot {
+    height: 6px;
+    width: 6px;
+    border-radius: 9999px;
+    background: var(--border-default);
+    transition: width 300ms ease, background 300ms ease;
+}
+.stepper-dot--active {
+    width: 18px;
+    background: var(--yellow);
 }

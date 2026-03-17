@@ -59,7 +59,7 @@
                                class="input-yellow w-24 bg-bg-elevated border border-default outline-none rounded-lg px-2 py-1 text-sm text-text-pri font-mono transition-colors" />
                         <button @onclick="SaveKodLimit"
                                 disabled="@_sistemLoading"
-                                class="btn-press bg-yellow text-[#0a0a0a] disabled:opacity-40 text-xs font-semibold px-3 py-1.5 rounded-lg hover:brightness-110 transition-all">
+                                class="btn-press bg-yellow text-[#111E3F] disabled:opacity-40 text-xs font-semibold px-3 py-1.5 rounded-lg hover:brightness-110 transition-all">
                             Kaydet
                         </button>
                         <span class="text-text-sec text-xs">Dağıtılan: <span class="text-text-pri font-semibold">@_dagitilan</span></span>
@@ -143,7 +143,7 @@
                        placeholder="@(_searchMode == "tckn" ? "11 haneli TCKN" : "OPET kodu (ör: TLP123456)")"
                        class="input-yellow flex-1 bg-bg-elevated border border-default outline-none rounded-lg px-3 py-2 text-xs text-text-pri placeholder:text-text-muted font-mono transition-colors" />
                 <button @onclick="DoSearch"
-                        class="btn-press bg-yellow text-[#0a0a0a] hover:brightness-110 font-semibold px-4 py-2 rounded-lg text-xs transition-all">
+                        class="btn-press bg-yellow text-[#111E3F] hover:brightness-110 font-semibold px-4 py-2 rounded-lg text-xs transition-all">
                     Ara
                 </button>
             </div>
@@ -240,7 +240,7 @@
 
                 <button @onclick="DoEkle"
                         disabled="@_ekleLoading"
-                        class="btn-press w-full bg-yellow text-[#0a0a0a] disabled:opacity-40 hover:brightness-110 font-semibold py-2.5 rounded-lg text-sm transition-all">
+                        class="btn-press w-full bg-yellow text-[#111E3F] disabled:opacity-40 hover:brightness-110 font-semibold py-2.5 rounded-lg text-sm transition-all">
                     @(_ekleLoading ? "Kaydediliyor..." : "Kaydet")
                 </button>
 
@@ -275,7 +275,7 @@
                     </select>
                 </div>
                 <button @onclick="LoadKodlar"
-                        class="btn-press bg-yellow text-[#0a0a0a] hover:brightness-110 text-xs font-semibold px-4 py-2 rounded-lg transition-all self-end">
+                        class="btn-press bg-yellow text-[#111E3F] hover:brightness-110 text-xs font-semibold px-4 py-2 rounded-lg transition-all self-end">
                     Filtrele
                 </button>
                 <button @onclick="ResetKodFilters"
@@ -383,7 +383,7 @@
                            class="bg-bg-elevated border border-default outline-none rounded-lg px-2 py-1.5 text-xs text-text-pri" />
                 </div>
                 <button @onclick="LoadLogs"
-                        class="btn-press bg-yellow text-[#0a0a0a] hover:brightness-110 text-xs font-semibold px-4 py-2 rounded-lg transition-all self-end">
+                        class="btn-press bg-yellow text-[#111E3F] hover:brightness-110 text-xs font-semibold px-4 py-2 rounded-lg transition-all self-end">
                     Filtrele
                 </button>
                 <button @onclick="ResetLogFilters"

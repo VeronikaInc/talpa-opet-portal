@@ -6,26 +6,27 @@
 <div class="flex flex-col min-h-screen bg-bg-base">
 
     <!-- Navbar -->
-    <header class="sticky top-0 z-50 border-b border-subtle" style="background: rgba(10,10,10,0.85); backdrop-filter: blur(12px);">
+    <header class="sticky top-0 z-50 border-b border-subtle"
+            style="background: rgba(17,30,63,0.85); backdrop-filter: blur(12px);">
         <div class="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
 
             <!-- Logo -->
-            <a href="/" class="flex items-center group select-none">
-                <!-- TALPA emblem -->
+            <a href="/" class="flex items-center select-none group">
                 <div class="flex items-center justify-center py-0.5" style="height:32px;">
-                    <img src="images/talpa-logo.png" alt="TALPA" class="h-8 w-auto object-contain transition-transform duration-150 group-hover:scale-105" />
+                    <img src="images/talpa-logo.png" alt="TALPA"
+                         class="h-8 w-auto object-contain transition-transform duration-150 group-hover:scale-105" />
                 </div>
             </a>
 
             <!-- Desktop nav -->
-            <nav class="hidden md:flex items-center gap-1">
-                <NavLink href="/"        Match="NavLinkMatch.All" class="@NavCls" ActiveClass="@NavActiveAdd">@L["nav_home"]</NavLink>
-                <NavLink href="/sorgula"                           class="@NavCls" ActiveClass="@NavActiveAdd">@L["nav_sorgula"]</NavLink>
-                <NavLink href="/rehber"                            class="@NavCls" ActiveClass="@NavActiveAdd">@L["nav_rehber"]</NavLink>
-                <NavLink href="/sss"                               class="@NavCls" ActiveClass="@NavActiveAdd">@L["nav_sss"]</NavLink>
-                <div class="w-px h-4 bg-subtle mx-2"></div>
+            <nav class="hidden md:flex items-center gap-0.5">
+                <a href="#sorgula" class="nav-link">@L["nav_sorgula"]</a>
+                <a href="#rehber"  class="nav-link">@L["nav_rehber"]</a>
+                <a href="#sss"     class="nav-link">@L["nav_sss"]</a>
+                <div class="w-px h-4 mx-2" style="background: rgba(255,255,255,0.12);"></div>
                 <button @onclick="ToggleLang"
-                        class="text-xs font-semibold text-text-sec hover:text-text-pri border border-default hover:border-subtle rounded-md px-2.5 py-1 transition-colors duration-150">
+                        class="text-xs font-semibold border rounded-md px-2.5 py-1 transition-colors duration-150"
+                        style="color: rgba(255,255,255,0.70); border-color: rgba(255,255,255,0.18);">
                     @(L.CurrentLang == "tr" ? "EN" : "TR")
                 </button>
             </nav>
@@ -33,11 +34,13 @@
             <!-- Mobile right -->
             <div class="md:hidden flex items-center gap-2">
                 <button @onclick="ToggleLang"
-                        class="text-xs font-semibold text-text-sec border border-default rounded-md px-2.5 py-1">
+                        class="text-xs font-semibold border rounded-md px-2.5 py-1"
+                        style="color: rgba(255,255,255,0.70); border-color: rgba(255,255,255,0.18);">
                     @(L.CurrentLang == "tr" ? "EN" : "TR")
                 </button>
                 <button @onclick="ToggleMobileMenu"
-                        class="w-8 h-8 flex items-center justify-center text-text-sec hover:text-text-pri transition-colors">
+                        class="w-8 h-8 flex items-center justify-center transition-colors"
+                        style="color: rgba(255,255,255,0.70);">
                     @if (_mobileOpen)
                     {
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,11 +60,11 @@
         <!-- Mobile menu -->
         @if (_mobileOpen)
         {
-            <div class="md:hidden bg-bg-surface border-t border-subtle px-5 py-3 flex flex-col gap-1">
-                <a href="/"        @onclick="CloseMobile" class="@MobileNavCls">@L["nav_home"]</a>
-                <a href="/sorgula" @onclick="CloseMobile" class="@MobileNavCls">@L["nav_sorgula"]</a>
-                <a href="/rehber"  @onclick="CloseMobile" class="@MobileNavCls">@L["nav_rehber"]</a>
-                <a href="/sss"     @onclick="CloseMobile" class="@MobileNavCls">@L["nav_sss"]</a>
+            <div class="md:hidden border-t border-subtle px-5 py-3 flex flex-col gap-1"
+                 style="background: rgba(17,30,63,0.97);">
+                <a href="#sorgula" @onclick="CloseMobile" class="@MobileNavCls">@L["nav_sorgula"]</a>
+                <a href="#rehber"  @onclick="CloseMobile" class="@MobileNavCls">@L["nav_rehber"]</a>
+                <a href="#sss"     @onclick="CloseMobile" class="@MobileNavCls">@L["nav_sss"]</a>
             </div>
         }
     </header>
@@ -72,9 +75,10 @@
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-subtle bg-bg-base">
-        <div class="max-w-5xl mx-auto px-5 py-5 flex items-center justify-center text-xs text-text-muted">
-            <span>© @DateTime.Now.Year TALPA — Türkiye Havayolu Pilotları Derneği</span>
+    <footer class="border-t border-subtle" style="background: var(--navy-dark);">
+        <div class="max-w-5xl mx-auto px-5 py-6 text-center"
+             style="color: rgba(255,255,255,0.40); font-size: 0.8125rem;">
+            © @DateTime.Now.Year TALPA — Türkiye Havayolu Pilotları Derneği. Tüm hakları saklıdır.
         </div>
     </footer>
 
@@ -83,9 +87,8 @@
 @code {
     private bool _mobileOpen;
 
-    private const string NavCls       = "px-3 py-1.5 rounded-md text-sm text-text-sec hover:text-text-pri hover:bg-bg-elevated transition-colors duration-150";
-    private const string NavActiveAdd = "!text-text-pri";
-    private const string MobileNavCls = "px-3 py-2.5 rounded-lg text-sm text-text-sec hover:text-text-pri hover:bg-bg-elevated transition-colors";
+    private const string MobileNavCls = "px-3 py-2.5 rounded-lg text-sm transition-colors duration-150 block"
+                                      + " text-white/70 hover:text-white hover:bg-white/5";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -95,6 +98,7 @@
             L.SetLang(lang ?? "tr");
             StateHasChanged();
         }
+        await JS.InvokeVoidAsync("initReveal");
     }
 
     private async Task ToggleLang()
@@ -106,5 +110,5 @@
     }
 
     private void ToggleMobileMenu() => _mobileOpen = !_mobileOpen;
-    private void CloseMobile() => _mobileOpen = false;
+    private void CloseMobile()       => _mobileOpen = false;
 }

@@ -2,121 +2,691 @@
 @layout MainLayout
 @inject LocalizationService L
 @inject IJSRuntime JS
+@inject IUyeService UyeService
+@inject ISistemAyarlariService SistemAyarlari
+@inject IHttpContextAccessor HttpContextAccessor
+@implements IDisposable
 
 <PageTitle>TALPA OPET Otobil Mobil</PageTitle>
 
-<!-- Hero -->
-<section class="bg-bg-base">
-    <div class="max-w-5xl mx-auto px-5 pt-20 pb-24 md:pt-28 md:pb-32 flex flex-col items-center text-center">
+<!-- ═══════════════════════════════════════════════════════════
+     1. HERO
+═══════════════════════════════════════════════════════════ -->
+<section id="hero" class="min-h-[90vh] py-20"
+         style="background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 60%, #1e3a6e 100%);">
+    <div class="max-w-5xl mx-auto px-5 pt-8 pb-16">
+        <div class="flex flex-col md:flex-row items-center md:items-start gap-10 md:gap-16">
 
-        <!-- Logo pair -->
-        <div class="animate-in flex items-center gap-4 mb-10">
-            <div class="bg-white rounded-xl px-3 py-2 flex items-center justify-center shadow-sm">
-                <img src="images/talpa-logo.png" alt="TALPA" class="h-10 md:h-12 w-auto object-contain" />
+            <!-- Sol kolon -->
+            <div class="flex-1 flex flex-col items-center md:items-start text-center md:text-left">
+
+                <!-- Logo pair -->
+                <div class="animate-in flex items-center gap-5 mb-10">
+                    <img src="images/talpa-logo.png" alt="TALPA"
+                         class="h-16 md:h-20 w-auto object-contain" />
+                    <span class="text-2xl font-light" style="color: rgba(255,255,255,0.30);">×</span>
+                    <img src="images/opet-logo.png" alt="OPET"
+                         class="h-10 md:h-12 w-auto object-contain brightness-0 invert" />
+                </div>
+
+                <!-- Badge -->
+                <div class="animate-in delay-100 inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-8 text-xs font-medium border"
+                     style="color: var(--yellow); background: rgba(245,196,0,0.10); border-color: rgba(245,196,0,0.25);">
+                    <span class="w-1.5 h-1.5 rounded-full" style="background: var(--yellow);"></span>
+                    TALPA × OPET İş Birliği
+                </div>
+
+                <!-- H1 -->
+                <h1 class="animate-in delay-200 font-bold leading-[1.08] tracking-[-0.02em] mb-5 max-w-2xl"
+                    style="font-size: clamp(2.25rem, 5vw, 3.5rem); color: #FFFFFF;">
+                    TALPA Üyelerine Özel<br>
+                    <span style="color: var(--yellow);">Akaryakıt İndirimi</span>
+                </h1>
+
+                <!-- Açıklama -->
+                <p class="animate-in delay-300 text-base md:text-lg max-w-[480px] leading-relaxed mb-10"
+                   style="color: rgba(255,255,255,0.70);">
+                    @L["home_hero_desc"]
+                </p>
+
+                <!-- CTA Butonlar -->
+                <div class="animate-in delay-400 flex flex-col sm:flex-row gap-3 items-center md:items-start">
+                    <a href="#sorgula"
+                       class="btn-press inline-flex items-center gap-2 font-semibold px-6 py-3 rounded-lg text-sm transition-all duration-150 hover:brightness-110 min-h-[44px]"
+                       style="background: var(--yellow); color: var(--navy-dark);">
+                        @L["home_cta"]
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </a>
+                    <a href="#rehber"
+                       class="btn-press inline-flex items-center gap-2 border px-6 py-3 rounded-lg text-sm transition-all duration-150 min-h-[44px]"
+                       style="border-color: rgba(255,255,255,0.18); color: #FFFFFF;">
+                        @L["home_guide_link"]
+                    </a>
+                </div>
+
+                <!-- %3 Rozet -->
+                <div class="animate-in delay-500 mt-12 inline-flex items-center gap-5 rounded-xl px-8 py-5"
+                     style="background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.12);">
+                    <div class="text-center">
+                        <div class="font-black leading-none" style="font-size: 3rem; color: var(--yellow);">%3</div>
+                        <div class="mt-1.5 font-medium uppercase tracking-widest" style="font-size: 11px; color: rgba(255,255,255,0.40);">İndirim</div>
+                    </div>
+                    <div class="w-px h-12" style="background: rgba(255,255,255,0.10);"></div>
+                    <div class="text-left">
+                        <div class="text-sm font-semibold" style="color: #FFFFFF;">OPET &amp; Sunpet</div>
+                        <div class="text-xs mt-1" style="color: rgba(255,255,255,0.70);">Tüm istasyonlarda geçerli</div>
+                        <div class="text-xs mt-0.5" style="color: rgba(255,255,255,0.40);">2.000+ istasyon, Türkiye geneli</div>
+                    </div>
+                </div>
+
             </div>
-            <span class="text-text-muted text-lg font-light">×</span>
-            <div class="bg-white rounded-xl px-4 py-2 flex items-center justify-center shadow-sm" style="height:56px;">
-                <img src="images/opet-logo.png" alt="OPET" class="h-7 w-auto object-contain" />
+
+            <!-- Sağ kolon: Stepper -->
+            <div class="w-full md:w-auto md:flex-shrink-0 animate-in delay-300">
+                <div class="stepper-card">
+                    <p class="stepper-header">Nasıl çalışır?</p>
+
+                    @for (int i = 0; i < _steps.Length; i++)
+                    {
+                        var idx = i;
+                        bool isActive = _activeStep == idx;
+                        <div class="stepper-row @(isActive ? "stepper-row--active" : "")">
+                            <div class="stepper-col">
+                                <div class="stepper-num @(isActive ? "stepper-num--active" : "")">@(idx + 1)</div>
+                                @if (idx < _steps.Length - 1)
+                                {
+                                    <div class="stepper-vline"></div>
+                                }
+                            </div>
+                            <div class="stepper-content">
+                                <p class="stepper-title @(isActive ? "stepper-title--active" : "")">@_steps[idx].Title</p>
+                                <p class="stepper-desc @(isActive ? "stepper-desc--active" : "")">@_steps[idx].Desc</p>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="stepper-dots">
+                        @for (int i = 0; i < _steps.Length; i++)
+                        {
+                            var idx = i;
+                            <div class="stepper-dot @(_activeStep == idx ? "stepper-dot--active" : "")"></div>
+                        }
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- Badge -->
-        <div class="animate-in delay-100 inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-8 text-xs font-medium text-yellow border border-yellow/20"
-             style="background: rgba(245,196,0,0.10);">
-            <span class="w-1.5 h-1.5 rounded-full bg-yellow"></span>
-            TALPA × OPET İş Birliği
-        </div>
-
-        <!-- Heading -->
-        <h1 class="animate-in delay-200 text-[2.5rem] sm:text-5xl md:text-6xl font-bold text-text-pri leading-[1.08] tracking-[-0.02em] mb-5 max-w-2xl">
-            TALPA Üyelerine Özel<br>
-            <span class="text-yellow">Akaryakıt İndirimi</span>
-        </h1>
-
-        <p class="animate-in delay-300 text-text-sec text-base md:text-lg max-w-[480px] leading-relaxed mb-10">
-            @L["home_hero_desc"]
-        </p>
-
-        <!-- CTAs -->
-        <div class="animate-in delay-400 flex flex-col sm:flex-row gap-3 items-center">
-            <a href="/sorgula"
-               class="btn-press inline-flex items-center gap-2 bg-yellow text-[#0a0a0a] font-semibold px-6 py-2.5 rounded-md text-sm transition-all duration-150 hover:brightness-110">
-                @L["home_cta"]
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                </svg>
-            </a>
-            <a href="/rehber"
-               class="btn-press inline-flex items-center gap-2 border border-default hover:bg-bg-elevated text-text-sec hover:text-text-pri px-6 py-2.5 rounded-md text-sm transition-all duration-150">
-                @L["home_guide_link"]
-            </a>
-        </div>
-
-        <!-- Discount badge -->
-        <div class="animate-in delay-500 mt-16 inline-flex items-center gap-5 bg-bg-surface border border-subtle rounded-xl px-8 py-5">
-            <div class="text-center">
-                <div class="text-5xl font-black text-yellow leading-none">%3</div>
-                <div class="text-[11px] text-text-muted mt-1.5 font-medium uppercase tracking-widest">İndirim</div>
-            </div>
-            <div class="w-px h-12" style="background: rgba(255,255,255,0.06);"></div>
-            <div class="text-left">
-                <div class="text-text-pri text-sm font-semibold">OPET &amp; Sunpet</div>
-                <div class="text-text-sec text-xs mt-1">Tüm istasyonlarda geçerli</div>
-                <div class="text-text-muted text-xs mt-0.5">2.000+ istasyon, Türkiye geneli</div>
-            </div>
         </div>
     </div>
 </section>
 
-<!-- Divider -->
-<div class="border-t border-subtle"></div>
+<!-- Ayraç: hero → sorgula -->
+<div style="height:50px; background:var(--bg-surface); clip-path:polygon(0 0, 100% 45%, 100% 100%, 0 100%);"></div>
 
-<!-- Feature Cards -->
-<section class="max-w-5xl mx-auto px-5 py-20">
-    <div class="grid md:grid-cols-3 gap-3">
+<!-- ═══════════════════════════════════════════════════════════
+     2. KOD SORGULA
+═══════════════════════════════════════════════════════════ -->
+<section id="sorgula" style="background: var(--bg-surface);" class="py-20">
+    <div class="max-w-5xl mx-auto px-5">
 
-        <!-- Card 1 -->
-        <div class="reveal delay-100 card-hover bg-bg-surface border border-subtle hover:border-default rounded-xl p-6">
-            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background: rgba(245,196,0,0.12);">
-                <svg class="w-5 h-5 text-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+        <!-- Section başlığı -->
+        <div class="text-center mb-12 anim">
+            <div class="inline-flex items-center gap-1.5 mb-4 text-sm font-semibold">
+                <span style="color: #FFFFFF;">TALPA</span>
+                <span style="color: rgba(255,255,255,0.40); font-size: 0.75rem;">×</span>
+                <span style="color: var(--yellow);">OPET</span>
             </div>
-            <h3 class="font-semibold text-text-pri text-sm mb-2">@L["home_feature1_title"]</h3>
-            <p class="text-text-sec text-sm leading-relaxed">@L["home_feature1_desc"]</p>
+            <h2 class="text-3xl font-bold mb-3" style="color: #FFFFFF; letter-spacing: -0.01em;">
+                @L["query_title"]
+            </h2>
+            <p style="color: rgba(255,255,255,0.70); font-size: 0.9375rem;">
+                TC kimlik numaranızı girerek size özel kodu alın
+            </p>
         </div>
 
-        <!-- Card 2 -->
-        <div class="reveal delay-200 card-hover bg-bg-surface border border-subtle hover:border-default rounded-xl p-6">
-            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background: rgba(34,197,94,0.10);">
-                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-                </svg>
-            </div>
-            <h3 class="font-semibold text-text-pri text-sm mb-2">@L["home_feature2_title"]</h3>
-            <p class="text-text-sec text-sm leading-relaxed">@L["home_feature2_desc"]</p>
+        <!-- Kart -->
+        <div class="mx-auto max-w-[480px] anim anim-delay-1 rounded-2xl p-8"
+             style="background: var(--bg-elevated); border: 1px solid rgba(255,255,255,0.18);">
+
+            @if (_result == null)
+            {
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider mb-2"
+                               style="color: rgba(255,255,255,0.70);">
+                            @L["query_label"]
+                        </label>
+                        <input @bind="_tckn"
+                               @onkeydown="OnKeyDown"
+                               type="text"
+                               maxlength="11"
+                               inputmode="numeric"
+                               placeholder="@L["query_placeholder"]"
+                               class="input-yellow w-full rounded-lg px-4 py-3 font-mono text-lg tracking-[0.2em] placeholder:font-sans placeholder:tracking-normal transition-colors duration-150"
+                               style="background: var(--bg-surface); border: 1px solid rgba(255,255,255,0.18); color: #FFFFFF;" />
+                        @if (_validationError)
+                        {
+                            <p class="text-xs mt-2 flex items-center gap-1.5" style="color: var(--red);">
+                                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                @L["query_validation"]
+                            </p>
+                        }
+                    </div>
+
+                    <button @onclick="DoSorgula"
+                            disabled="@_loading"
+                            class="btn-press w-full disabled:opacity-40 disabled:cursor-not-allowed font-semibold py-3 rounded-lg text-sm transition-all duration-150 hover:brightness-110 min-h-[44px]"
+                            style="background: var(--yellow); color: var(--navy-dark);">
+                        @if (_loading)
+                        {
+                            <span class="flex items-center justify-center gap-2">
+                                <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                                </svg>
+                                Sorgulanıyor...
+                            </span>
+                        }
+                        else
+                        {
+                            @L["query_button"]
+                        }
+                    </button>
+                </div>
+            }
+            else
+            {
+                <!-- Başvuru askıya alındı -->
+                @if (_result == "suspended")
+                {
+                    <div class="rounded-xl p-5 mb-5 border" style="background: rgba(200,16,46,0.08); border-color: rgba(200,16,46,0.25);">
+                        <div class="flex gap-3">
+                            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--red);">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                            </svg>
+                            <div>
+                                <p class="text-sm font-semibold mb-1" style="color: var(--red);">Başvuru Askıya Alındı</p>
+                                <p class="text-sm" style="color: rgba(200,16,46,0.80);">@L["query_suspended"]</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <!-- Kontenjan doldu -->
+                else if (_result == "quota_full")
+                {
+                    <div class="rounded-xl p-5 mb-5 border" style="background: rgba(200,16,46,0.08); border-color: rgba(200,16,46,0.25);">
+                        <div class="flex gap-3">
+                            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--red);">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <div>
+                                <p class="text-sm font-semibold mb-1" style="color: var(--red);">Kontenjan Doldu</p>
+                                <p class="text-sm" style="color: rgba(200,16,46,0.80);">@L["query_quota_full"]</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <!-- Bulunamadı -->
+                @if (_result == "not_found")
+                {
+                    <div class="rounded-xl p-5 mb-5 border" style="background: rgba(200,16,46,0.08); border-color: rgba(200,16,46,0.25);">
+                        <div class="flex gap-3">
+                            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--red);">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <div>
+                                <p class="text-sm font-semibold mb-1" style="color: var(--red);">Üyelik Bulunamadı</p>
+                                <p class="text-sm" style="color: rgba(200,16,46,0.80);">@L["query_not_found"]</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <!-- Borçlu -->
+                else if (_result == "borclu")
+                {
+                    <div class="rounded-xl p-5 mb-5 border" style="background: rgba(245,196,0,0.08); border-color: rgba(245,196,0,0.25);">
+                        <div class="flex gap-3">
+                            <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--yellow);">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <div>
+                                <p class="text-sm font-semibold mb-1" style="color: var(--yellow);">Aidat Borcu Mevcut</p>
+                                <p class="text-sm" style="color: rgba(245,196,0,0.80);">@L["query_borclu"]</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <!-- Başarı -->
+                else
+                {
+                    <div class="mb-5">
+                        <div class="flex items-center gap-2 mb-4">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--success);">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--success);">@L["query_success_label"]</span>
+                        </div>
+
+                        <!-- Kod kutusu -->
+                        <div class="rounded-xl p-4 mb-4 flex items-center justify-between gap-3"
+                             style="background: rgba(245,196,0,0.10); border: 1px solid rgba(245,196,0,0.25);">
+                            <span class="font-mono text-2xl font-bold tracking-[0.05em]" style="color: var(--yellow);">@_result</span>
+                            <button @onclick="CopyCode"
+                                    class="border rounded-lg px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors duration-150 flex-shrink-0 min-h-[36px]"
+                                    style="@(_copied ? "color: var(--yellow); border-color: rgba(245,196,0,0.4); background: var(--bg-surface);" : "color: rgba(255,255,255,0.70); border-color: rgba(255,255,255,0.18); background: var(--bg-surface);")">
+                                @if (_copied)
+                                {
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    @L["query_copied"]
+                                }
+                                else
+                                {
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                    @L["query_copy"]
+                                }
+                            </button>
+                        </div>
+
+                        <!-- WhatsApp -->
+                        <div class="rounded-xl p-4 mb-4 text-center border"
+                             style="background: var(--bg-surface); border-color: rgba(255,255,255,0.12);">
+                            <p class="text-xs mb-3" style="color: rgba(255,255,255,0.70);">@L["query_whatsapp_info"]</p>
+                            <a href="https://wa.me/904446738?text=WPOTOBILOZEL%20@_result" target="_blank" rel="noopener"
+                               class="btn-press inline-flex w-full justify-center items-center gap-2 text-white px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors duration-150"
+                               style="background: #25D366;">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                </svg>
+                                @L["query_whatsapp_btn"]
+                            </a>
+                        </div>
+
+                        <a href="#rehber"
+                           class="btn-press block w-full text-center font-semibold py-2.5 rounded-lg text-sm transition-all duration-150 mb-2 min-h-[44px] flex items-center justify-center"
+                           style="background: var(--yellow); color: var(--navy-dark);">
+                            @L["query_guide_btn"]
+                        </a>
+                    </div>
+                }
+
+                <button @onclick="Reset"
+                        class="btn-press w-full border py-2.5 rounded-lg text-sm transition-colors duration-150 min-h-[44px]"
+                        style="border-color: rgba(255,255,255,0.18); color: rgba(255,255,255,0.70);">
+                    @L["query_new"]
+                </button>
+            }
+
+        </div>
+    </div>
+</section>
+
+<!-- Ayraç: sorgula → rehber -->
+<div style="height:50px; background:var(--bg-base); clip-path:polygon(0 0, 100% 45%, 100% 100%, 0 100%); margin-top:-1px;"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     3. BAŞVURU REHBERİ
+═══════════════════════════════════════════════════════════ -->
+<section id="rehber" style="background: var(--bg-base);" class="py-20">
+    <div class="max-w-2xl mx-auto px-5">
+
+        <!-- Section başlığı -->
+        <div class="mb-12 anim">
+            <h2 class="text-3xl font-bold mb-3" style="color: #FFFFFF; letter-spacing: -0.01em;">
+                @L["guide_title"]
+            </h2>
+            <p style="color: rgba(255,255,255,0.70); font-size: 0.9375rem;">@L["guide_subtitle"]</p>
         </div>
 
-        <!-- Card 3 -->
-        <div class="reveal delay-300 card-hover bg-bg-surface border border-subtle hover:border-default rounded-xl p-6">
-            <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-4" style="background: rgba(26,47,90,0.35);">
-                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
+        <div class="flex flex-col gap-0">
+
+            <!-- Adım 1 -->
+            <div class="anim anim-delay-1 flex gap-5">
+                <div class="flex flex-col items-center">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 border"
+                         style="color: var(--yellow); background: rgba(245,196,0,0.10); border-color: rgba(245,196,0,0.30);">1</div>
+                    <div class="step-line my-1"></div>
+                </div>
+                <div class="flex-1 pb-8 pt-0.5">
+                    <div class="rounded-xl p-5 border" style="background: var(--bg-surface); border-color: rgba(255,255,255,0.12);">
+                        <h3 class="font-semibold text-sm mb-1.5" style="color: #FFFFFF;">@L["guide_step1_title"]</h3>
+                        <p class="text-sm mb-4" style="color: rgba(255,255,255,0.70);">@L["guide_step1_desc"]</p>
+                        <div class="flex flex-wrap gap-2.5">
+                            <a href="https://apps.apple.com/tr/app/otobil-mobil/id1440827450" target="_blank" rel="noopener"
+                               class="btn-press inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors duration-150 border"
+                               style="background: var(--bg-elevated); border-color: rgba(255,255,255,0.12); color: #FFFFFF;">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                                </svg>
+                                @L["guide_appstore"]
+                            </a>
+                            <a href="https://play.google.com/store/apps/details?id=com.opet.otobil" target="_blank" rel="noopener"
+                               class="btn-press inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors duration-150 border"
+                               style="background: var(--bg-elevated); border-color: rgba(255,255,255,0.12); color: #FFFFFF;">
+                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" style="color: #4CAF50;">
+                                    <path d="M3.18 23.76c.33.18.7.25 1.07.19l12.93-7.46-2.79-2.79-11.21 10.06zM.5 1.78C.2 2.1 0 2.62 0 3.3v17.4c0 .68.2 1.2.5 1.52l.08.08L9.69 13.1v-.2L.58 1.7l-.08.08zM20.12 10.4L17.1 8.65l-3.08 3.08 3.08 3.08 3.04-1.76c.87-.5.87-1.31 0-1.8l-.02.15zM4.25.05l12.93 7.46-2.79 2.79L3.18.24C3.51.08 3.92.15 4.25.05z"/>
+                                </svg>
+                                @L["guide_googleplay"]
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <h3 class="font-semibold text-text-pri text-sm mb-2">@L["home_feature3_title"]</h3>
-            <p class="text-text-sec text-sm leading-relaxed">@L["home_feature3_desc"]</p>
+
+            <!-- Adım 2 -->
+            <div class="anim anim-delay-2 flex gap-5">
+                <div class="flex flex-col items-center">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 border"
+                         style="color: var(--yellow); background: rgba(245,196,0,0.10); border-color: rgba(245,196,0,0.30);">2</div>
+                    <div class="step-line my-1"></div>
+                </div>
+                <div class="flex-1 pb-8 pt-0.5">
+                    <div class="rounded-xl p-5 border" style="background: var(--bg-surface); border-color: rgba(255,255,255,0.12);">
+                        <h3 class="font-semibold text-sm mb-1.5" style="color: #FFFFFF;">@L["guide_step2_title"]</h3>
+                        <p class="text-sm mb-4" style="color: rgba(255,255,255,0.70);">@L["guide_step2_desc"]</p>
+                        <a href="#sorgula"
+                           class="btn-press inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors duration-150 border"
+                           style="background: rgba(245,196,0,0.10); border-color: rgba(245,196,0,0.30); color: var(--yellow);">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            @L["guide_sorgula_link"]
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adım 3 -->
+            <div class="anim anim-delay-3 flex gap-5">
+                <div class="flex flex-col items-center">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 border"
+                         style="color: var(--yellow); background: rgba(245,196,0,0.10); border-color: rgba(245,196,0,0.30);">3</div>
+                    <div class="step-line my-1"></div>
+                </div>
+                <div class="flex-1 pb-8 pt-0.5">
+                    <div class="rounded-xl p-5 border" style="background: var(--bg-surface); border-color: rgba(255,255,255,0.12);">
+                        <h3 class="font-semibold text-sm mb-1.5" style="color: #FFFFFF;">@L["guide_step3_title"]</h3>
+                        <p class="text-sm mb-3" style="color: rgba(255,255,255,0.70);">@L["guide_step3_desc"]</p>
+
+                        <div class="rounded-lg px-4 py-3 mb-3 flex items-center gap-3 border"
+                             style="background: var(--bg-elevated); border-color: rgba(255,255,255,0.12);">
+                            <code class="font-mono text-sm font-semibold flex-1" style="color: #FFFFFF;">@L["guide_step3_msg"]</code>
+                        </div>
+
+                        <a href="https://wa.me/904446738?text=WPOTOBILOZEL%20" target="_blank" rel="noopener"
+                           class="btn-press inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors duration-150 border mb-4"
+                           style="background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.20); color: #4ade80;">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                            </svg>
+                            @L["guide_whatsapp"]
+                        </a>
+
+                        <!-- Önemli not -->
+                        <div class="rounded-lg p-4" style="background: rgba(245,196,0,0.10); border: 1px solid rgba(245,196,0,0.25); border-left: 3px solid var(--yellow);">
+                            <div class="flex gap-2.5">
+                                <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: var(--yellow);">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <p style="font-size: 0.8125rem; color: rgba(255,255,255,0.70); line-height: 1.5;">
+                                    @if (L.CurrentLang == "tr")
+                                    {
+                                        @:Başvurunuz OPET tarafından alındıktan sonra sisteme tanımlanması birkaç gün sürebilir.
+                                        @:Ayrıca indiriminizin aktif olabilmesi için başvurudan sonra OPET veya Sunpet istasyonundan
+                                        @:en az bir kez akaryakıt almanız gerekmektedir.
+                                    }
+                                    else
+                                    {
+                                        @:After submitting your application, please allow a few days for OPET to process and activate
+                                        @:your account. Additionally, your discount will only become active after your first fuel
+                                        @:purchase at an OPET or Sunpet station.
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adım 4 -->
+            <div class="anim anim-delay-4 flex gap-5">
+                <div class="flex flex-col items-center">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 border"
+                         style="color: var(--yellow); background: rgba(245,196,0,0.10); border-color: rgba(245,196,0,0.30);">4</div>
+                    <div class="step-line my-1"></div>
+                </div>
+                <div class="flex-1 pb-8 pt-0.5">
+                    <div class="rounded-xl p-5 border" style="background: var(--bg-surface); border-color: rgba(255,255,255,0.12);">
+                        <h3 class="font-semibold text-sm mb-1.5" style="color: #FFFFFF;">@L["guide_step4_title"]</h3>
+                        <p class="text-sm" style="color: rgba(255,255,255,0.70);">@L["guide_step4_desc"]</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Adım 5 — Son -->
+            <div class="anim flex gap-5">
+                <div class="flex flex-col items-center">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
+                         style="background: var(--yellow); color: var(--navy-dark);">5</div>
+                </div>
+                <div class="flex-1 pt-0.5">
+                    <div class="rounded-xl p-5 border" style="background: rgba(245,196,0,0.08); border-color: rgba(245,196,0,0.22);">
+                        <h3 class="font-semibold text-sm mb-1.5" style="color: var(--yellow);">@L["guide_step5_title"]</h3>
+                        <p class="text-sm" style="color: rgba(255,255,255,0.70);">@L["guide_step5_desc"]</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- CTA -->
+        <div class="mt-12 text-center anim">
+            <a href="#sorgula"
+               class="btn-press inline-flex items-center gap-2 font-semibold px-7 py-3 rounded-lg text-sm transition-all duration-150 hover:brightness-110 min-h-[44px]"
+               style="background: var(--yellow); color: var(--navy-dark);">
+                @L["guide_sorgula_link"]
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<!-- Ayraç: rehber → sss -->
+<div style="height:50px; background:var(--bg-surface); clip-path:polygon(0 0, 100% 45%, 100% 100%, 0 100%); margin-top:-1px;"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     4. SSS
+═══════════════════════════════════════════════════════════ -->
+<section id="sss" style="background: var(--bg-surface);" class="py-20">
+    <div class="max-w-2xl mx-auto px-5">
+
+        <!-- Section başlığı -->
+        <div class="mb-10 anim">
+            <h2 class="text-3xl font-bold mb-3" style="color: #FFFFFF; letter-spacing: -0.01em;">@L["faq_title"]</h2>
+            <p style="color: rgba(255,255,255,0.70); font-size: 0.9375rem;">Kampanya hakkında sık sorulan soruların cevapları.</p>
+        </div>
+
+        <!-- Accordion -->
+        <div class="flex flex-col gap-2">
+            @foreach (var (q, a, i) in _faqs)
+            {
+                <details class="anim @($"anim-delay-{Math.Min(i + 1, 4)}") rounded-xl overflow-hidden border"
+                         style="background: var(--bg-elevated); border-color: rgba(255,255,255,0.12);"
+                         open="@(i == 0)">
+                    <summary class="flex items-center justify-between px-5 py-4 cursor-pointer select-none">
+                        <span class="faq-question text-sm font-medium pr-4" style="color: #FFFFFF;">@q</span>
+                        <svg class="chevron w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                             style="color: rgba(255,255,255,0.40);">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </summary>
+                    <div class="px-5 pb-5 pt-1 border-t" style="border-color: rgba(255,255,255,0.12);">
+                        <p class="text-sm leading-relaxed" style="color: rgba(255,255,255,0.70);">@a</p>
+                    </div>
+                </details>
+            }
+        </div>
+
+        <!-- İletişim CTA -->
+        <div class="mt-10 anim rounded-xl p-6 border" style="background: var(--bg-elevated); border-color: rgba(255,255,255,0.12);">
+            <p class="text-sm font-semibold mb-1" style="color: #FFFFFF;">Sorunuz burada yok mu?</p>
+            <p class="text-xs mb-4" style="color: rgba(255,255,255,0.70);">TALPA veya OPET müşteri hizmetleri ile iletişime geçin.</p>
+            <a href="tel:4446738"
+               class="btn-press inline-flex items-center gap-2 border px-4 py-2 rounded-lg text-xs font-medium transition-colors duration-150 min-h-[40px]"
+               style="background: var(--bg-surface); border-color: rgba(255,255,255,0.18); color: rgba(255,255,255,0.70);">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                </svg>
+                OPET: 444 67 38
+            </a>
         </div>
 
     </div>
 </section>
 
 @code {
+    // ── Stepper ────────────────────────────────────────────────────────
+    private int _activeStep = 0;
+    private System.Timers.Timer? _timer;
+
+    private record Step(string Title, string Desc);
+
+    private readonly Step[] _steps =
+    [
+        new("Uygulamayı İndir",    "Otobil Mobil'i App Store veya Google Play'den indir"),
+        new("Kodunu Al",           "TC kimlik numaranla kampanya kodunu sorgula"),
+        new("WhatsApp'tan Başvur", "444 67 38'e WPOTOBILOZEL [KODUN] yaz"),
+        new("İndirim Aktif!",      "İlk alımdan itibaren %3 indirim otomatik uygulanır"),
+    ];
+
+    // ── Sorgula ───────────────────────────────────────────────────────
+    private string _tckn = string.Empty;
+    private string? _result;
+    private bool _loading;
+    private bool _validationError;
+    private bool _copied;
+
+    // ── SSS ───────────────────────────────────────────────────────────
+    private IEnumerable<(string q, string a, int i)> _faqs =>
+        new[] {
+            (L["faq_q1"], L["faq_a1"]),
+            (L["faq_q2"], L["faq_a2"]),
+            (L["faq_q3"], L["faq_a3"]),
+            (L["faq_q4"], L["faq_a4"]),
+            (L["faq_q5"], L["faq_a5"]),
+        }.Select((x, i) => (x.Item1, x.Item2, i));
+
+    // ── Lifecycle ─────────────────────────────────────────────────────
+    protected override void OnInitialized()
+    {
+        _timer = new System.Timers.Timer(3000);
+        _timer.Elapsed += async (_, _) =>
+        {
+            _activeStep = (_activeStep + 1) % _steps.Length;
+            await InvokeAsync(StateHasChanged);
+        };
+        _timer.Start();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
+        {
             await JS.InvokeVoidAsync("initReveal");
+            await JS.InvokeVoidAsync("initScrollBehavior");
+        }
+    }
+
+    public void Dispose() => _timer?.Dispose();
+
+    // ── Sorgula methods ───────────────────────────────────────────────
+    private async Task DoSorgula()
+    {
+        _validationError = false;
+        var tckn = _tckn.Trim();
+        if (tckn.Length != 11 || !tckn.All(char.IsDigit))
+        {
+            _validationError = true;
+            return;
+        }
+
+        if (!await SistemAyarlari.BasvuruAktifMiAsync())
+        {
+            _result = "suspended";
+            return;
+        }
+
+        var limit = await SistemAyarlari.GetMaxKodLimitiAsync();
+        if (limit > 0)
+        {
+            var dagitilan = await SistemAyarlari.GetDagitimSayisiAsync();
+            if (dagitilan >= limit)
+            {
+                _result = "quota_full";
+                return;
+            }
+        }
+
+        _loading = true;
+        try
+        {
+            var uye = await UyeService.GetByTcknAsync(tckn);
+            string logSonuc;
+            if (uye == null)
+            {
+                _result = "not_found";
+                logSonuc = "bulunamadi";
+            }
+            else if (uye.Borclu)
+            {
+                _result = "borclu";
+                logSonuc = "borclu";
+            }
+            else
+            {
+                _result = uye.OpetKodu;
+                logSonuc = "basarili";
+                if (!uye.KodGoruntulendi)
+                    await UyeService.KodGoruntulendiAsync(tckn);
+            }
+
+            var ip = HttpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
+            await UyeService.LogSorguAsync(tckn, logSonuc, ip);
+        }
+        finally { _loading = false; }
+    }
+
+    private async Task CopyCode()
+    {
+        if (_result is not null)
+        {
+            await JS.InvokeVoidAsync("copyToClipboard", _result);
+            _copied = true;
+            await Task.Delay(2000);
+            _copied = false;
+        }
+    }
+
+    private void Reset()
+    {
+        _result = null;
+        _tckn = string.Empty;
+        _validationError = false;
+        _copied = false;
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await DoSorgula();
     }
 }
